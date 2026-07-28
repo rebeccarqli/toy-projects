@@ -1,0 +1,21 @@
+{
+  "email": {
+    "smtp_server": "smtp.gmail.com",
+    "smtp_port": 587,
+    "sender_email": "your.email@gmail.com",
+    "sender_password": "your-16-char-app-password",
+    "recipient_email": "your.email@gmail.com"
+  },
+  "products": [
+    {
+      "name": "Maeve Pleated Utility Trousers",
+      "url": "https://www.anthropologie.com/shop/astr-the-label-kyara-pants?color=020&type=STANDARD&size=XS&quantity=1",
+      "drop_percent": 20
+    },
+    {
+      "name": "Pilcro Adi Floral Mid-Rise Wide-Leg Jeans",
+      "url": "https://www.anthropologie.com/shop/pilcro-adi-floral-mid-rise-wide-leg-jeans?color=092&searchparams=q=denim%2520light&type=STANDARD&size=25&quantity=1",
+      "target_price": 135
+    }
+  ]
+}
