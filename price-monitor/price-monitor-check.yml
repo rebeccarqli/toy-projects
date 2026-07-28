@@ -1,0 +1,47 @@
+name: Daily price check
+
+on:
+  schedule:
+    # Runs at 13:00 UTC every day - adjust to whatever local time you like.
+    # (Actions cron times can slip by a few minutes at busy times; that's normal.)
+    - cron: "0 13 * * *"
+  workflow_dispatch: {}   # lets you click "Run workflow" in the Actions tab to test
+
+permissions:
+  contents: write   # needed so the workflow can commit the updated state.json
+
+defaults:
+  run:
+    working-directory: price-monitor
+
+jobs:
+  check-prices:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run price monitor
+        env:
+          SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
+          SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
+          RECIPIENT_EMAIL: ${{ secrets.RECIPIENT_EMAIL }}
+        run: python3 price_monitor.py
+
+      - name: Commit updated price history
+        run: |
+          git config user.name "price-monitor-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add state.json
+          git diff --staged --quiet || git commit -m "Update price state [skip ci]"
+          git push
