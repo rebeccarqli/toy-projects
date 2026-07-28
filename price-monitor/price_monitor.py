@@ -22,6 +22,7 @@ import sys
 import time
 from datetime import datetime, timezone
 from email.mime.text import MIMEText
+from urllib.parse import urlparse
 
 import requests
 from bs4 import BeautifulSoup
@@ -31,13 +32,48 @@ HEADERS = {
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
         "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
     ),
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
     "Accept-Language": "en-US,en;q=0.9",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Upgrade-Insecure-Requests": "1",
+    "Sec-Fetch-Dest": "document",
+    "Sec-Fetch-Mode": "navigate",
+    "Sec-Fetch-Site": "none",
+    "Sec-Fetch-User": "?1",
+    "sec-ch-ua": '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": '"Windows"',
+    "Connection": "keep-alive",
 }
 
 FAILURE_ALERT_EVERY = 3  # send a "this check is broken" email every N consecutive failures
 REQUEST_RETRIES = 2
 REQUEST_RETRY_DELAY_SECONDS = 4
+
+# One shared session so cookies persist across requests (and across products
+# on the same domain within a single run), plus a memo of which domains
+# we've already "warmed up" with a homepage visit this run.
+_session = requests.Session()
+_warmed_domains = set()
+
+
+def _warm_up_domain(url):
+    """
+    Visit a site's homepage once before requesting a deep product URL, and
+    remember that we did. Some bot-protection treats a request that jumps
+    straight to a product page with no prior visit as a signal of automation;
+    this mimics a normal browsing path instead. Best-effort only - failures
+    here are not fatal, the real request is still attempted afterward.
+    """
+    parsed = urlparse(url)
+    domain = f"{parsed.scheme}://{parsed.netloc}"
+    if domain not in _warmed_domains:
+        try:
+            _session.get(domain, headers=HEADERS, timeout=15)
+        except requests.RequestException:
+            pass
+        _warmed_domains.add(domain)
+    return domain
 
 
 # --------------------------------------------------------------------------
@@ -146,7 +182,11 @@ def fetch_page(url):
     last_error = None
     for attempt in range(1, REQUEST_RETRIES + 2):
         try:
-            resp = requests.get(url, headers=HEADERS, timeout=20)
+            domain = _warm_up_domain(url)
+            headers = dict(HEADERS)
+            headers["Referer"] = domain + "/"
+            headers["Sec-Fetch-Site"] = "same-origin"
+            resp = _session.get(url, headers=headers, timeout=20)
             resp.raise_for_status()
             return resp.text
         except requests.RequestException as e:
