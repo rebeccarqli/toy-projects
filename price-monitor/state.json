@@ -1,12 +1,12 @@
 {
   "https://www.anthropologie.com/shop/astr-the-label-kyara-pants?color=020&type=STANDARD&size=XS&quantity=1": {
-    "consecutive_failures": 11,
-    "last_checked": "2026-08-05T15:50:50+00:00",
+    "consecutive_failures": 12,
+    "last_checked": "2026-08-07T10:38:43+00:00",
     "last_error": "request failed: 403 Client Error: Forbidden for url: https://www.anthropologie.com/shop/astr-the-label-kyara-pants?color=020&type=STANDARD&size=XS&quantity=1"
   },
   "https://www.anthropologie.com/shop/pilcro-adi-floral-mid-rise-wide-leg-jeans?color=092&searchparams=q=denim%2520light&type=STANDARD&size=25&quantity=1": {
-    "consecutive_failures": 11,
-    "last_checked": "2026-08-05T15:50:58+00:00",
+    "consecutive_failures": 12,
+    "last_checked": "2026-08-07T10:38:52+00:00",
     "last_error": "request failed: 403 Client Error: Forbidden for url: https://www.anthropologie.com/shop/pilcro-adi-floral-mid-rise-wide-leg-jeans?color=092&searchparams=q=denim%2520light&type=STANDARD&size=25&quantity=1"
   }
 }
